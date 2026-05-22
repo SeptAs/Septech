@@ -30,6 +30,13 @@ app.secret_key = os.environ.get('SECRET_KEY', 'konkou-septa-xK9mP3!')
 CORS(app)
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
+# ── INITIALIZASYON TAB PREMIUM YO SOU POSTGRESQL ──────────────────────────────
+if PREMIUM_ENABLED:
+    try:
+        init_premium_tables()
+    except Exception as db_err:
+        print(f"[ERROR] Tab premium yo pa ka kreye: {db_err}")
+
 # ── BANK KESYON — 20 pa kategori/nivo, 3 lang ─────────────────────────────────
 # Chak kesyon gen: q_ht, q_fr, q_en, opts_ht, opts_fr, opts_en, ans
 QUESTIONS = {
