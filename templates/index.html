@@ -1006,10 +1006,13 @@ function _msg(m){const t=_$('tst');if(!t)return;t.textContent=m;t.classList.add(
 function _ss(id){document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));const e=_$(id);if(e)e.classList.add('on');}
 
 // ── LEADERBOARD ───────────────────────────────────────────────────
+// ── LEADERBOARD ───────────────────────────────────────────────────
+const BASE_URL = 'https://septech7.onrender.com';
+
 async function _rl(){
   _html('lb',`<div class="lem">${_t('loading')}</div>`);
   try{
-    const r=await fetch('/api/leaderboard'); const lb=await r.json();
+    const r=await fetch(BASE_URL + '/api/leaderboard'); const lb=await r.json();
     const t=_T[_L];
     if(!lb.length){_html('lb',`<div class="lem">${t.lbempty}</div>`);return;}
     const rc=['g','s','b'];
@@ -1027,7 +1030,7 @@ async function _rl(){
 async function _rm(){
   _html('mlb','<div class="lem">⏳...</div>');
   try{
-    const r=await fetch('/api/leaderboard/monthly'); const lb=await r.json();
+    const r=await fetch(BASE_URL + '/api/leaderboard/monthly'); const lb=await r.json();
     const t=_T[_L];
     // Podium
     ['pod1','pod2','pod3'].forEach((id,i)=>{
@@ -1046,7 +1049,7 @@ async function _rm(){
 
 async function _rw(){
   try{
-    const r=await fetch('/api/leaderboard/monthly/winner'); const d=await r.json();
+    const r=await fetch(BASE_URL + '/api/leaderboard/monthly/winner'); const d=await r.json();
     const days=d.days_left||0; const t=_T[_L];
     const cd=_$('prize-countdown');
     if(cd) cd.textContent=days<=3&&days>0?`⚠️ ${days} ${t.days_left}`:(days===0?'🎊 Dènye jou!':`⏰ ${days} ${t.days_left}`);
@@ -1055,7 +1058,6 @@ async function _rw(){
     if(days<=3&&days>0&&!_isPrem()) _notif('🏆',_t('top3_msg'),_t('go_prem'));
   }catch(e){}
 }
-
 // ── START QUIZ ────────────────────────────────────────────────────
 async function _go(){
   const name=_$('pName').value.trim();
@@ -1068,7 +1070,7 @@ async function _go(){
   _ac.tabHide=0; _ac.suspicious=false;
   if(name) _ls(_UK,{name});
   try{
-    const r=await fetch('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch(BASE_URL + '/api/start',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({name,category:_x.cat,difficulty:_x.dif,lang:_L})});
     const d=await r.json(); if(d.error){_msg(d.error);return;}
     _x={..._x,tok:d.token,tot:d.total,scr:0,ok:0,ko:0,t0:Date.now(),ans:false,done:false,nq:null};
@@ -1121,7 +1123,7 @@ async function _ans(el,idx){
   if(!_acOk()){console.warn('[Anti-cheat] Fast answer');}
   document.querySelectorAll('.ob').forEach(b=>b.disabled=true);
   try{
-    const r=await fetch('/api/answer',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch(BASE_URL + '/api/answer',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({token:_x.tok,answer:idx})});
     const d=await r.json();
     document.querySelectorAll('.ob').forEach((b,i)=>{
@@ -1141,7 +1143,7 @@ function _sfb(ok,msg){const b=_$('fb');b.className=`fb on ${ok?'ok':'ng'}`;b.inn
 async function _fin(){
   clearInterval(_x.ti);
   const elapsed=Math.round((Date.now()-_x.t0)/1000);
-  try{await fetch('/api/finish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:_x.tok,time_elapsed:elapsed})});}catch(e){}
+  try{await fetch(BASE_URL + '/api/finish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:_x.tok,time_elapsed:elapsed})});}catch(e){}
 
   const tot=_x.tot; const pct=Math.round((_x.ok/tot)*100);
   // Save stats
@@ -1149,7 +1151,7 @@ async function _fin(){
   s.g++; s.gpd++; s.tc+=_x.ok; if(_x.ok===tot)s.pg++;
   // Points
   const mx=_x.dif==='hard'?15:_x.dif==='medium'?20:25;
-  const sd=_streak(); let earned=0;
+  let earned=0;
   for(let i=0;i<_x.ok;i++) earned+=_calcPts(Math.max(0,_x.tl),mx,_x.dif,i);
   if(_x.isDaily){earned+=_x.dailyBonus;_ls(_DK,{date:new Date().toDateString()});s.dd++;_x.isDaily=false;}
   if(ip) earned=Math.round(earned*1.2);
@@ -1169,13 +1171,11 @@ async function _fin(){
   _ss('s2'); setTimeout(()=>{const rc=_$('rc');if(rc)rc.style.strokeDashoffset=408.4*(1-pct/100);},100);
   // Notify near top 3
   setTimeout(async()=>{
-    try{const r=await fetch('/api/leaderboard/monthly');const lb=await r.json();
+    try{const r=await fetch(BASE_URL + '/api/leaderboard/monthly');const lb=await r.json();
       if(lb.length>=3&&s.tp>lb[2].score*0.8&&!ip){_notif('🏆',_t('top3_msg'),_t('go_prem'));}}catch(e){}
   },2000);
   _checkBadges();
 }
-
-function _home(){clearInterval(_x.ti);_ss('s0');}
 
 // ── BOOT ─────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
